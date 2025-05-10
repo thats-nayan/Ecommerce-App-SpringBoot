@@ -39,13 +39,9 @@ public class CategoryServiceImpl implements CategoryService {
     public boolean updateCategory(Long categoryId,Category updatedCategory) {
         Optional<Category> match = categoryRepository.findById(categoryId);
         if(match.isPresent()) {
-            if(updatedCategory.getCategoryName().equalsIgnoreCase(match.get().getCategoryName())) {
-                return true;
-            }
-            else {
-                categoryRepository.delete(match.get());
-                categoryRepository.save(updatedCategory);
-            }
+            Category existingCategory = match.get();
+            existingCategory.setCategoryName(updatedCategory.getCategoryName());
+            categoryRepository.save(existingCategory);
         }
         return match.isPresent();
     }
