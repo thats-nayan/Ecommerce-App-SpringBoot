@@ -1,11 +1,12 @@
 package com.ecommerce.project.service;
 
+import com.ecommerce.project.exceptions.EmptyResourceException;
+import com.ecommerce.project.exceptions.ResourceAlreadyExistsException;
+import com.ecommerce.project.exceptions.ResourceNotFoundException;
 import com.ecommerce.project.model.Category;
 import com.ecommerce.project.repositories.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,34 +16,39 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    private Long uniqueId = (long)0;
     @Override
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        List <Category> categories = categoryRepository.findAll();
+        if(categories.isEmpty()) {
+            throw new EmptyResourceException("Categories");
+        }
+        return categories;
     }
     @Override
-    public boolean createCategory(Category category) {
+    public String createCategory(Category category) {
         Optional<Category> existing = categoryRepository.findByCategoryNameIgnoreCase(category.getCategoryName());
         if(existing.isPresent()) {
-            return false;
+            throw new ResourceAlreadyExistsException("Category","categoryName",category.getCategoryName());
         }
         categoryRepository.save(category);
-        return true;
+        return "Category added successfully";
     }
     @Override
-    public boolean deleteCategory(Long categoryId) {
-        Optional<Category> existing = categoryRepository.findById(categoryId);
-        existing.ifPresent(category -> categoryRepository.delete(category));
-        return existing.isPresent();
+    public String deleteCategory(Long categoryId) {
+        Category existing = categoryRepository.findById(categoryId)
+                .orElseThrow(()-> new ResourceNotFoundException("Category","CategoryId",categoryId));
+        categoryRepository.delete(existing);
+        return "Category deleted successfully";
     }
     @Override
-    public boolean updateCategory(Long categoryId,Category updatedCategory) {
+    public String updateCategory(Long categoryId,Category updatedCategory) {
         Optional<Category> match = categoryRepository.findById(categoryId);
         if(match.isPresent()) {
             Category existingCategory = match.get();
             existingCategory.setCategoryName(updatedCategory.getCategoryName());
             categoryRepository.save(existingCategory);
+            return "Category updated successfully";
         }
-        return match.isPresent();
+        throw new ResourceNotFoundException("Category","CategoryId",categoryId);
     }
 }

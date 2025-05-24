@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface CategoryService {
     List<Category> getAllCategories();
-    boolean createCategory(Category category);
-    boolean deleteCategory(Long categoryId);
-    boolean updateCategory(Long categoryId,Category category);
+    String createCategory(Category category);
+    String deleteCategory(Long categoryId);
+    String updateCategory(Long categoryId,Category category);
 }
