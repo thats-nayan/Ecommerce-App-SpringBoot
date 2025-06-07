@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ecommerce.project.config.AppConstants.*;
+
 @RestController
 @RequestMapping("/api")
 public class CategoryController {
@@ -23,10 +25,14 @@ public class CategoryController {
     }
 
     @GetMapping("/public/categories")
-    public ResponseEntity<CategoryResponseDTO> getAllCategories() {
-        return new ResponseEntity<>(categoryService.getAllCategories(), HttpStatus.OK);
+    public ResponseEntity<CategoryResponseDTO> getAllCategories(
+            @RequestParam(name = "pageNumber",defaultValue = PAGE_NUMBER) Integer pageNumber,
+            @RequestParam(name = "pageSize",defaultValue = PAGE_SIZE) Integer pageSize,
+            @RequestParam(name = "sortBy",defaultValue = SORT_BY_CATEGORY_NAME) String sortBy,
+            @RequestParam(name = "sortOrder",defaultValue = SORT_DIRECTION) String sortOrder
+    ) {
+        return new ResponseEntity<>(categoryService.getAllCategories(pageNumber,pageSize,sortBy,sortOrder), HttpStatus.OK);
     }
-
     @PostMapping("/admin/category")
     public ResponseEntity<CategoryRequestDTO> addCategory(@Valid @RequestBody CategoryRequestDTO category) {
         return new ResponseEntity<>(categoryService.createCategory(category), HttpStatus.OK);

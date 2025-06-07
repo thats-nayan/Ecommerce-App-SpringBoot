@@ -9,6 +9,10 @@ import com.ecommerce.project.payload.CategoryResponseDTO;
 import com.ecommerce.project.repositories.CategoryRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -23,14 +27,26 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private ModelMapper modelMapper;
     @Override
-    public CategoryResponseDTO getAllCategories() {
-        List <Category> categories = categoryRepository.findAll();
+    public CategoryResponseDTO getAllCategories(Integer pageNumber,Integer pageSize,String sortBy,String sortOrder) {
+        Sort sortObject = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        PageRequest pageDetails = PageRequest.of(pageNumber,pageSize,sortObject);
+        Page<Category> categoryPage = categoryRepository.findAll(pageDetails);
+        List <Category> categories = categoryPage.getContent();
         if(categories.isEmpty()) {
             throw new EmptyResourceException("Categories");
         }
         List<CategoryRequestDTO> categoryRequestDTOS = categories.stream().map(category -> modelMapper.map(category, CategoryRequestDTO.class)).toList();
         CategoryResponseDTO categoryResponseDTO = new CategoryResponseDTO();
         categoryResponseDTO.setContent(categoryRequestDTOS);
+
+        // Set pagination metadata
+        categoryResponseDTO.setTotalElements(categoryPage.getTotalElements());
+        categoryResponseDTO.setPageNumber(categoryPage.getNumber());
+        categoryResponseDTO.setPageSize(categoryPage.getSize());
+        categoryResponseDTO.setTotalPages(categoryPage.getTotalPages());
+        categoryResponseDTO.setLastPage(categoryPage.isLast());
         return categoryResponseDTO;
     }
     @Override
