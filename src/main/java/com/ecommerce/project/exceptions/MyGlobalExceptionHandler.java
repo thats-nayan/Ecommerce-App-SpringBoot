@@ -1,5 +1,6 @@
 package com.ecommerce.project.exceptions;
 
+import com.ecommerce.project.payload.ExceptionResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -29,20 +30,21 @@ public class MyGlobalExceptionHandler {
     }
     // Thrown when we delete, update a resource which does not exist
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<String> myResourceNotFoundException(ResourceNotFoundException e){
-        String message = e.getMessage();
-        return new ResponseEntity<>(message,HttpStatus.NOT_FOUND);
+    public ResponseEntity<ExceptionResponseDTO> myResourceNotFoundException(ResourceNotFoundException e){
+        ExceptionResponseDTO response = new ExceptionResponseDTO(e.getMessage(),"failed");
+        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
     }
     // Thrown when we add a resource which already exists
     @ExceptionHandler(ResourceAlreadyExistsException.class)
-    public ResponseEntity<String> myResourceAlreadyExistsException(ResourceAlreadyExistsException e){
-        String message = e.getMessage();
-        return new ResponseEntity<>(message,HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ExceptionResponseDTO> myResourceAlreadyExistsException(ResourceAlreadyExistsException e){
+        ExceptionResponseDTO response = new ExceptionResponseDTO(e.getMessage(),"failed");
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
     // Thrown when we try to get a resource which does not have any values
     @ExceptionHandler(EmptyResourceException.class)
-    public ResponseEntity<String> myEmptyResourceException(EmptyResourceException e){
-        String message = e.getMessage();
-        return new ResponseEntity<>(message,HttpStatus.OK);
+    public ResponseEntity<ExceptionResponseDTO> myEmptyResourceException(EmptyResourceException e){
+        ExceptionResponseDTO response = new ExceptionResponseDTO(e.getMessage(),"failed");
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
+    // Thrown when page
 }

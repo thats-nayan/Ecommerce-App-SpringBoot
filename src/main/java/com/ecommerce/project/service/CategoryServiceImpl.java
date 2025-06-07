@@ -34,10 +34,14 @@ public class CategoryServiceImpl implements CategoryService {
         PageRequest pageDetails = PageRequest.of(pageNumber,pageSize,sortObject);
         Page<Category> categoryPage = categoryRepository.findAll(pageDetails);
         List <Category> categories = categoryPage.getContent();
-        if(categories.isEmpty()) {
+        if(categoryPage.getTotalElements() == 0) {
             throw new EmptyResourceException("Categories");
         }
         List<CategoryRequestDTO> categoryRequestDTOS = categories.stream().map(category -> modelMapper.map(category, CategoryRequestDTO.class)).toList();
+        return getCategoryResponseDTO(categoryRequestDTOS, categoryPage);
+    }
+
+    private static CategoryResponseDTO getCategoryResponseDTO(List<CategoryRequestDTO> categoryRequestDTOS, Page<Category> categoryPage) {
         CategoryResponseDTO categoryResponseDTO = new CategoryResponseDTO();
         categoryResponseDTO.setContent(categoryRequestDTOS);
 
@@ -49,6 +53,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryResponseDTO.setLastPage(categoryPage.isLast());
         return categoryResponseDTO;
     }
+
     @Override
     public CategoryRequestDTO createCategory(CategoryRequestDTO category) {
         Optional<Category> existing = categoryRepository.findByCategoryNameIgnoreCase(category.getCategoryName());
