@@ -43,8 +43,7 @@ public class MyGlobalExceptionHandler {
     // Thrown when we try to get a resource which does not have any values
     @ExceptionHandler(EmptyResourceException.class)
     public ResponseEntity<ExceptionResponseDTO> myEmptyResourceException(EmptyResourceException e){
-        ExceptionResponseDTO response = new ExceptionResponseDTO(e.getMessage(),"failed");
+        ExceptionResponseDTO response = new ExceptionResponseDTO(e.getMessage(),"success");
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
-    // Thrown when page
 }
