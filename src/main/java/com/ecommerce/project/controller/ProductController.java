@@ -4,10 +4,13 @@ import com.ecommerce.project.model.Product;
 import com.ecommerce.project.payload.ProductRequestDTO;
 import com.ecommerce.project.payload.ProductResponseDTO;
 import com.ecommerce.project.service.ProductService;
+import com.ecommerce.project.utils.ValidatorGroups;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +27,7 @@ public class ProductController {
     }
 
     @PostMapping("/admin/categories/{categoryId}/product")
-    public ResponseEntity<ProductRequestDTO> addProduct(@RequestBody Product product, @PathVariable Long categoryId) {
+    public ResponseEntity<ProductRequestDTO> addProduct(@Validated(ValidatorGroups.OnCreate.class) @RequestBody ProductRequestDTO product, @PathVariable Long categoryId) {
         return new ResponseEntity<>(productService.createProduct(categoryId,product), HttpStatus.OK);
     }
 
@@ -55,5 +58,10 @@ public class ProductController {
             @RequestParam(name = "sortOrder",defaultValue = SORT_DIRECTION) String sortOrder,
             @PathVariable String keyword) {
         return new ResponseEntity<>(productService.getProductsByKeyword(pageNumber,pageSize,sortBy,sortOrder,keyword),HttpStatus.FOUND);
+    }
+
+    @PutMapping("/admin/products/{productId}")
+    public ResponseEntity<ProductRequestDTO> updateProduct(@Validated(ValidatorGroups.OnUpdate.class) @RequestBody ProductRequestDTO product, @PathVariable Long productId) {
+        return new ResponseEntity<>(productService.updateProduct(productId,product), HttpStatus.OK);
     }
 }

@@ -1,6 +1,7 @@
 package com.ecommerce.project.service;
 
 import com.ecommerce.project.exceptions.EmptyResourceException;
+import com.ecommerce.project.exceptions.ResourceAlreadyExistsException;
 import com.ecommerce.project.exceptions.ResourceNotFoundException;
 import com.ecommerce.project.model.Category;
 import com.ecommerce.project.model.Product;
@@ -30,10 +31,16 @@ public class ProductServiceImpl implements ProductService {
     private CategoryRepository categoryRepository;
 
     @Override
-    public ProductRequestDTO createProduct(Long categoryId, Product product) {
+    public ProductRequestDTO createProduct(Long categoryId, ProductRequestDTO productRequestDTO) {
+        Optional<Product> productExists = productRepository.findByProductNameIgnoreCase(productRequestDTO.getProductName());
+        if(productExists.isPresent()){
+            throw new ResourceAlreadyExistsException("Product","productName",productRequestDTO.getProductName());
+        }
         Category category = searchCategory(categoryId);
 
+        Product product = modelMapper.map(productRequestDTO, Product.class);
         product.setCategory(category);
+
         double specialPrice = product.getPrice() - (product.getPrice() * product.getDiscount() * 0.01);
         product.setSpecialPrice(specialPrice);
         product.setImage("default.png");
@@ -104,6 +111,39 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productPage.getContent();
         List<ProductRequestDTO> productRequestDTOs = products.stream().map(product -> modelMapper.map(product, ProductRequestDTO.class)).toList();
         return getProductResponseDTO(productRequestDTOs, productPage);
+    }
+
+    @Override
+    public ProductRequestDTO updateProduct(Long productId, ProductRequestDTO productRequestDTO) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(()-> new ResourceNotFoundException("Product","ProductId",productId));
+
+        if(productRequestDTO.getCategoryName() != null) {
+            Category category = categoryRepository.findByCategoryNameIgnoreCase(productRequestDTO.getCategoryName())
+                    .orElseThrow(()-> new ResourceNotFoundException("Category","CategoryName",productRequestDTO.getCategoryName()));
+            product.setCategory(category);
+        }
+        if(productRequestDTO.getProductName() != null) {
+            product.setProductName(productRequestDTO.getProductName());
+        }
+        if(productRequestDTO.getDescription() != null){
+            product.setDescription(productRequestDTO.getDescription());
+        }
+        if(productRequestDTO.getImage() != null) {
+            product.setImage(productRequestDTO.getImage());
+        }
+        if(productRequestDTO.getQuantity() != null) {
+            product.setQuantity(productRequestDTO.getQuantity());
+        }
+        if(productRequestDTO.getPrice() != null) {
+            product.setPrice(productRequestDTO.getPrice());
+        }
+        if(productRequestDTO.getDiscount() != null) {
+            product.setDiscount(productRequestDTO.getDiscount());
+        }
+        double specialPrice = product.getPrice() - (product.getPrice() * product.getDiscount() * 0.01);
+        product.setSpecialPrice(specialPrice);
+        return modelMapper.map(productRepository.save(product), ProductRequestDTO.class);
     }
 
     public Category searchCategory(Long categoryId) {
