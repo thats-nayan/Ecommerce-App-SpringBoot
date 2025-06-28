@@ -13,13 +13,20 @@ import com.ecommerce.project.repositories.CategoryRepository;
 import com.ecommerce.project.repositories.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -29,6 +36,10 @@ public class ProductServiceImpl implements ProductService {
     private ModelMapper modelMapper;
     @Autowired
     private CategoryRepository categoryRepository;
+    @Autowired
+    private FileService fileService;
+    @Value("${project.images}")
+    private String path;
 
     @Override
     public ProductRequestDTO createProduct(Long categoryId, ProductRequestDTO productRequestDTO) {
@@ -89,7 +100,7 @@ public class ProductServiceImpl implements ProductService {
         Page<Product> productPage = productRepository.findByCategory(category,pageDetails);
 
         if(productPage.getTotalElements() == 0) {
-            throw new EmptyResourceException("Products");
+            throw new EmptyResourceException("Products","Category",category.getCategoryName());
         }
 
         List<Product> products = productPage.getContent();
@@ -105,7 +116,7 @@ public class ProductServiceImpl implements ProductService {
         Page<Product> productPage = productRepository.findByProductNameLikeIgnoreCase('%'+keyword+'%',pageDetails);
 
         if(productPage.getTotalElements() == 0) {
-            throw new EmptyResourceException("Products");
+            throw new EmptyResourceException("Products",keyword);
         }
 
         List<Product> products = productPage.getContent();
@@ -129,9 +140,6 @@ public class ProductServiceImpl implements ProductService {
         if(productRequestDTO.getDescription() != null){
             product.setDescription(productRequestDTO.getDescription());
         }
-        if(productRequestDTO.getImage() != null) {
-            product.setImage(productRequestDTO.getImage());
-        }
         if(productRequestDTO.getQuantity() != null) {
             product.setQuantity(productRequestDTO.getQuantity());
         }
@@ -154,9 +162,24 @@ public class ProductServiceImpl implements ProductService {
         return modelMapper.map(product, ProductRequestDTO.class);
     }
 
+    @Override
+    public ProductRequestDTO updateProductImage(Long productId, MultipartFile image) throws IOException {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(()-> new ResourceNotFoundException("Product","ProductId",productId));
+
+        // Upload image to server (file system in our case)
+        // Get auto generated file name of uploaded image
+        String fileName = fileService.uploadImage(path,image);
+
+        // Updating the new product image for product
+        product.setImage(fileName);
+
+        // Return DTO after updating product
+        return modelMapper.map(productRepository.save(product), ProductRequestDTO.class);
+    }
+
     public Category searchCategory(Long categoryId) {
         return categoryRepository.findById(categoryId)
                 .orElseThrow(()-> new ResourceNotFoundException("Category","CategoryId",categoryId));
     }
-
 }

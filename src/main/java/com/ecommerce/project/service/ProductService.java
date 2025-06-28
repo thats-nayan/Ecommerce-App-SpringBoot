@@ -4,6 +4,9 @@ import com.ecommerce.project.model.Product;
 import com.ecommerce.project.payload.ProductRequestDTO;
 import com.ecommerce.project.payload.ProductResponseDTO;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 public interface ProductService {
     ProductRequestDTO createProduct(Long categoryId, ProductRequestDTO product);
@@ -17,4 +20,6 @@ public interface ProductService {
     ProductRequestDTO updateProduct(Long productId,ProductRequestDTO product);
 
     ProductRequestDTO deleteProduct(Long productId);
+
+    ProductRequestDTO updateProductImage(Long productId, MultipartFile image) throws IOException;
 }

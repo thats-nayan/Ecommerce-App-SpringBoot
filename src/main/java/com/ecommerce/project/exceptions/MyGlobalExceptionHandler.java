@@ -40,7 +40,7 @@ public class MyGlobalExceptionHandler {
         ExceptionResponseDTO response = new ExceptionResponseDTO(e.getMessage(),"failed");
         return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
-    // Thrown when we try to get a resource which does not have any values
+    // Thrown when we try to get a resource which does not have any values added
     @ExceptionHandler(EmptyResourceException.class)
     public ResponseEntity<ExceptionResponseDTO> myEmptyResourceException(EmptyResourceException e){
         ExceptionResponseDTO response = new ExceptionResponseDTO(e.getMessage(),"success");
