@@ -64,4 +64,9 @@ public class ProductController {
     public ResponseEntity<ProductRequestDTO> updateProduct(@Validated(ValidatorGroups.OnUpdate.class) @RequestBody ProductRequestDTO product, @PathVariable Long productId) {
         return new ResponseEntity<>(productService.updateProduct(productId,product), HttpStatus.OK);
     }
+
+    @DeleteMapping("/admin/products/{productId}")
+    public ResponseEntity<ProductRequestDTO> deleteProduct(@PathVariable Long productId) {
+        return new ResponseEntity<>(productService.deleteProduct(productId), HttpStatus.OK);
+    }
 }
